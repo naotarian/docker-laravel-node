@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/node/Dockerfile
+    container_name: frontend
+    volumes:
+    - ./src/frontend:/app
+    ports:
+      - 3000:3000
+    # command: sh -c "cd /app/keibord && yarn start"
+    tty: true
+    
+  backend:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: backend
+    volumes:
+    - ./src/backend:/app
+    - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+    ports:
+      - 8080:8080
+    # command: sh -c "go run main.go"
+    tty: true
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    container_name: web
+    ports:
+      - 80:80
+    environment:
+      - TZ=Asia/Tokyo
+    volumes:
+      - ./src:/src
+      - ./nginx_log/:/var/log/nginx
+  
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: xxxxxx
+      MYSQL_DATABASE: xxxxxx
+      MYSQL_USER: xxxxxx
+      MYSQL_PASSWORD: xxxxxx
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/mysql-log:/var/log/mysql
+    container_name: mysql
+      
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_HOST=mysql
+    ports:
+      - 3306:80
+    container_name: phpmyadmin
